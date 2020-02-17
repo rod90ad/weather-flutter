@@ -12,14 +12,16 @@ class RotatedIcons extends StatefulWidget {
   final WeatherData weatherData;
 
   @override
-  _RotatedIconsState createState() => _RotatedIconsState();
+  RotatedIconsState createState() => RotatedIconsState();
 }
 
-class _RotatedIconsState extends State<RotatedIcons>
+class RotatedIconsState extends State<RotatedIcons>
     with SingleTickerProviderStateMixin {
-  AnimationController _controller;
+  AnimationController controller;
   Animation rotateCurve;
+  Animation spaceCurve;
   Animation<double> _rotation;
+  Animation<double> _space;
 
   double ringDiameter;
   final double _iconSize = 30;
@@ -28,20 +30,27 @@ class _RotatedIconsState extends State<RotatedIcons>
   @override
   void initState() {
     super.initState();
-    _controller =
-        AnimationController(vsync: this, duration: Duration(seconds: 4));
+    controller =
+        AnimationController(vsync: this, duration: Duration(seconds: 3));
     rotateCurve = CurvedAnimation(
-        parent: _controller,
-        curve: Interval(0.4, 1.0, curve: Curves.easeInOutCirc));
+        parent: controller,
+        curve: Interval(0.4, 1.0, curve: Curves.easeInOutCubic));
     _rotation = Tween<double>(begin: 1.0, end: 95.0).animate(rotateCurve)
       ..addListener(() {
         setState(() {});
       });
+    spaceCurve = CurvedAnimation(
+        parent: controller, curve: Interval(0.0, 0.7, curve: Curves.bounceIn));
+    _space = Tween<double>(begin: 10.0, end: 90.0).animate(spaceCurve)
+      ..addListener(() {
+        setState(() {});
+      });
+    controller.forward();
   }
 
   @override
   void dispose() {
-    _controller?.dispose();
+    controller?.dispose();
     super.dispose();
   }
 
@@ -52,7 +61,6 @@ class _RotatedIconsState extends State<RotatedIcons>
 
   @override
   Widget build(BuildContext context) {
-    _controller.forward();
     ringDiameter = MediaQuery.of(context).size.width * 1.3;
     return Positioned(
         top: MediaQuery.of(context).size.height * 0.435,
@@ -80,30 +88,62 @@ class _RotatedIconsState extends State<RotatedIcons>
 
   List<Widget> _getIcons() {
     List<Widget> list = List<Widget>();
-    list.add(_getIcon(_getTimeIcon(), widget.weatherData.data["results"]["time"], widget.weatherData.data["results"]["description"]));
-    list.add(_getIcon(WeatherIcons.sunset, widget.weatherData.data["results"]["sunset"], "Por do Sol"));
-    list.add(_getIcon(WeatherIcons.windy, widget.weatherData.data["results"]["wind_speedy"], "Vento"));
-    list.add(_getIcon(WeatherIcons.sunrise, widget.weatherData.data["results"]["sunrise"], "Nascer do Sol"));
-    list.add(_getIcon(WeatherIcons.humidity, "${widget.weatherData.data["results"]["humidity"].toString()}%", "Umidade do Ar"));    
+    list.add(_getIcon(
+        _getTimeIcon(),
+        widget.weatherData.data["results"]["time"],
+        widget.weatherData.data["results"]["description"]));
+    list.add(_getIcon(WeatherIcons.sunset,
+        widget.weatherData.data["results"]["sunset"], "Por do Sol"));
+    list.add(_getIcon(WeatherIcons.windy,
+        widget.weatherData.data["results"]["wind_speedy"], "Vento"));
+    list.add(_getIcon(WeatherIcons.sunrise,
+        widget.weatherData.data["results"]["sunrise"], "Nascer do Sol"));
+    list.add(_getIcon(
+        WeatherIcons.humidity,
+        "${widget.weatherData.data["results"]["humidity"].toString()}%",
+        "Umidade do Ar"));
     return list;
   }
 
   Widget _getIcon(IconData iconData, String title, String subTitle) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: <Widget>[
-        BoxedIcon(iconData, color: _iconColor, size: _iconSize),
-        Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(title, style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-            Text(subTitle, style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
-          ],
-        )
-      ]
-    );
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Stack(
+            children: <Widget>[
+              Positioned(
+                left: 1.0,
+                top: 1.0,
+                child:
+                    BoxedIcon(iconData, color: Colors.black54, size: _iconSize),
+              ),
+              BoxedIcon(iconData, color: _iconColor, size: _iconSize),
+            ],
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(title,
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      shadows: [
+                        Shadow(color: Colors.black54, offset: Offset(1.0, 1.0))
+                      ])),
+              Text(subTitle,
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      shadows: [
+                        Shadow(color: Colors.black54, offset: Offset(1.0, 1.0))
+                      ])),
+            ],
+          )
+        ]);
   }
 
   IconData _getTimeIcon() {
@@ -154,9 +194,8 @@ class _RotatedIconsState extends State<RotatedIcons>
     return widgets
         .asMap()
         .map((index, widget) {
-          final double angle = widgets.length == 1
-              ? 45.0
-              : 90.0 / (widgets.length * 2 - 2) * (index * 2) - 45;
+          final double angle =
+              _space.value / (widgets.length * 2 - 2) * (index * 2) - 45;
           return MapEntry(index, _applyTranslation(angle, widget));
         })
         .values

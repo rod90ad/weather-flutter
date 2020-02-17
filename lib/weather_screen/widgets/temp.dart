@@ -15,7 +15,7 @@ class Temp extends StatelessWidget {
       child: Observer(
         builder: (_){
           if(weatherData.data!=null)
-            return Text("${weatherData.data["results"]["temp"].toString()}°", style: TextStyle(color: Colors.white, fontSize: 80, fontWeight: FontWeight.bold));              
+            return Text("${weatherData.data["results"]["temp"].toString()}°", style: TextStyle(color: Colors.white, fontSize: 80, fontWeight: FontWeight.bold, shadows: [Shadow(color: Colors.black54, offset: Offset(1.0,1.0))]));              
           else
             return Text("");
         },

@@ -16,7 +16,7 @@ class CityName extends StatelessWidget {
       child: Observer(
         builder: (_){
           if(weatherData.data!=null)
-            return Text(weatherData.data["results"]["city"].toString().replaceAll(",", ""), style: TextStyle(color: Colors.white, fontSize: 35));
+            return Text(weatherData.data["results"]["city"].toString().replaceAll(",", ""), style: TextStyle(color: Colors.white, fontSize: 35, shadows: [Shadow(color: Colors.black54, offset: Offset(1.0,1.0))]));
           else
             return Text("");
         },
